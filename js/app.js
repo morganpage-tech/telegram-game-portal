@@ -1597,6 +1597,11 @@ class GamePortal {
         this.portalView.classList.remove('active');
         this.gameView.classList.add('active');
 
+        // Prevent body scrolling when game is active
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+
         // Haptic feedback
         if (this.tg && this.tg.HapticFeedback) {
             this.tg.HapticFeedback.impactOccurred('light');
@@ -1610,6 +1615,11 @@ class GamePortal {
         console.log('Removing active from gameView, adding to portalView');
         this.gameView.classList.remove('active');
         this.portalView.classList.add('active');
+
+        // Re-enable body scrolling when returning to portal
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
 
         // Force reflow to ensure CSS changes apply immediately
         void this.portalView.offsetWidth;
