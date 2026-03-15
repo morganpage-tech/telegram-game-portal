@@ -961,55 +961,71 @@ class GamePortal {
     goBack() {
         console.log('goBack() called');
 
-        // End game session
-        if (this.currentSession) {
-            const score = this.currentSession.score || 0;
-            const playtime = (Date.now() - this.currentSession.startTime) / 1000;
-
-            // Award coins from game session
-            const coinsEarned = this.rewards.earnFromGame(score, playtime);
-            this.showCoinEarnedNotification(coinsEarned);
-
-            this.profile.endGameSession(
-                this.currentSession.gameId,
-                this.currentSession.startTime,
-                score
-            );
-            this.leaderboard.updateGlobalLeaderboard();
-            this.leaderboard.updateGameLeaderboard(this.currentSession.gameId);
-
-            // Prepare share data if score > 0
-            if (score > 0) {
-                this.share.prepareShare(this.currentSession.gameId, score);
-                this.updateShareButton();
-            }
-
-            this.currentSession = null;
-        }
-
-        // Clear game frame first
-        this.gameFrame.src = '';
-        this.currentGame = null;
-
-        // Switch views
+        // IMPORTANT: Switch views FIRST before any other operations
         console.log('Removing active from gameView, adding to portalView');
         this.gameView.classList.remove('active');
         this.portalView.classList.add('active');
 
-        // Force reflow to ensure CSS changes apply
+        // Force reflow to ensure CSS changes apply immediately
         void this.portalView.offsetWidth;
+        console.log('View switching complete');
 
-        // Update UI
-        console.log('Updating stats bar');
-        this.updateStatsBar();
-        this.updateLeaderboardPreview();
-        this.updateProfileRank();
-        this.updateCoinDisplay();
+        // Clear game frame immediately
+        this.gameFrame.src = '';
+        this.currentGame = null;
 
-        console.log('Reloading games');
-        this.loadGames(); // Reload to update game card stats
+        // End game session (try-catch to prevent errors from blocking navigation)
+        try {
+            if (this.currentSession) {
+                const score = this.currentSession.score || 0;
+                const playtime = (Date.now() - this.currentSession.startTime) / 1000;
 
-        console.log('goBack() completed');
+                // Award coins from game session
+                const coinsEarned = this.rewards.earnFromGame(score, playtime);
+                this.showCoinEarnedNotification(coinsEarned);
+
+                this.profile.endGameSession(
+                    this.currentSession.gameId,
+                    this.currentSession.startTime,
+                    score
+                );
+                this.leaderboard.updateGlobalLeaderboard();
+                this.leaderboard.updateGameLeaderboard(this.currentSession.gameId);
+
+                // Prepare share data if score > 0
+                if (score > 0) {
+                    this.share.prepareShare(this.currentSession.gameId, score);
+                    this.updateShareButton();
+                }
+
+                this.currentSession = null;
+            }
+        } catch (e) {
+            console.error('Error ending game session:', e);
+            // Don't let this error block navigation
+        }
+
+        // Update UI (try-catch to prevent errors from blocking)
+        try {
+            console.log('Updating stats bar');
+            this.updateStatsBar();
+            this.updateLeaderboardPreview();
+            this.updateProfileRank();
+            this.updateCoinDisplay();
+        } catch (e) {
+            console.error('Error updating UI:', e);
+        }
+
+        // Reload games (try-catch to prevent errors from blocking)
+        try {
+            console.log('Reloading games');
+            this.loadGames(); // Reload to update game card stats
+        } catch (e) {
+            console.error('Error reloading games:', e);
+            // Don't let this error block navigation
+        }
+
+        console.log('goBack() completed successfully');
 
         // Haptic feedback
         if (this.tg && this.tg.HapticFeedback) {
