@@ -246,6 +246,19 @@
                     </div>
                 </div>
 
+                <!-- Referral Card -->
+                <div class="referral-card">
+                    <div class="referral-header">
+                        <span class="referral-title">🎁 Invite & Earn</span>
+                        <span class="referral-bonus">+100 🪙 per invite</span>
+                    </div>
+                    <p class="referral-desc">Share your referral link to earn coins!</p>
+                    <button class="referral-btn" id="referral-btn">
+                        <span class="referral-btn-icon">📤</span>
+                        <span class="referral-btn-text">Invite Friends</span>
+                    </button>
+                </div>
+
                 <!-- Coin History -->
                 <div class="profile-section">
                     <h3>💰 Coin History</h3>
@@ -317,6 +330,63 @@
                     </div>
                     <div class="leaderboard-list" id="game-leaderboard">
                         <!-- Leaderboard entries -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referral Popup -->
+        <div id="referral-popup" class="popup-overlay">
+            <div class="popup-content referral-popup-content">
+                <div class="popup-header">
+                    <h2>🎁 Invite Friends</h2>
+                    <button class="close-btn" id="close-referral-popup">✕</button>
+                </div>
+
+                <div class="referral-stats">
+                    <div class="referral-stat">
+                        <span class="referral-stat-value" id="referral-invites">0</span>
+                        <span class="referral-stat-label">Friends Invited</span>
+                    </div>
+                    <div class="referral-stat">
+                        <span class="referral-stat-value" id="referral-earned">0</span>
+                        <span class="referral-stat-label">Coins Earned</span>
+                    </div>
+                </div>
+
+                <div class="referral-link-section">
+                    <label>Your Referral Link</label>
+                    <div class="referral-link-input-wrapper">
+                        <input
+                            type="text"
+                            id="referral-link"
+                            class="referral-link-input"
+                            readonly
+                        />
+                        <button class="copy-btn" id="copy-referral-link">📋</button>
+                    </div>
+                </div>
+
+                <div class="referral-bonus-info">
+                    <div class="bonus-item">
+                        <span class="bonus-emoji">🎁</span>
+                        <span class="bonus-text">You earn <span id="referral-bonus">100</span> coins per invite</span>
+                    </div>
+                    <div class="bonus-item">
+                        <span class="bonus-emoji">💰</span>
+                        <span class="bonus-text">Friends get 50 bonus coins when signing up</span>
+                    </div>
+                </div>
+
+                <button class="share-referral-btn" id="share-referral-link">
+                    <span class="share-referral-icon">📱</span>
+                    <span>Share Link</span>
+                </button>
+
+                <div class="referral-invites-list">
+                    <h4>👥 Your Invites</h4>
+                    <div class="invites-list" id="referral-invites-list">
+                        <p class="empty-text">No invites yet. Share your link to start earning!</p>
                     </div>
                 </div>
             </div>

@@ -664,6 +664,153 @@ class ShareManager {
     }
 }
 
+// Referral Manager
+class ReferralManager {
+    constructor(profile, rewards) {
+        this.profile = profile;
+        this.rewards = rewards;
+        this.storageKey = 'gamePortalReferrals';
+        this.data = this.loadReferrals();
+    }
+
+    loadReferrals() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (e) {
+            console.error('Error loading referrals:', e);
+        }
+        return this.getDefaultReferrals();
+    }
+
+    getDefaultReferrals() {
+        return {
+            referralCode: this.generateReferralCode(),
+            referredBy: null,
+            invites: [],
+            totalInvites: 0,
+            totalCoinsEarned: 0,
+            referralBonus: {
+                inviter: 100, // Coins for inviting someone
+                invitee: 50   // Coins for being invited
+            }
+        };
+    }
+
+    generateReferralCode() {
+        const userId = this.profile.data.userId || 'user';
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        return `${userId}-${randomStr}`;
+    }
+
+    saveReferrals() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        } catch (e) {
+            console.error('Error saving referrals:', e);
+        }
+    }
+
+    getReferralLink() {
+        const botUsername = window.Telegram?.WebApp?.initDataUnsafe?.user?.username || 'yourbot';
+        return `https://t.me/${botUsername}?start=${this.data.referralCode}`;
+    }
+
+    getReferralLinkWithBot(botUsername) {
+        return `https://t.me/${botUsername}?start=${this.data.referralCode}`;
+    }
+
+    processReferral(referralCode) {
+        // Check if this user was already referred
+        if (this.data.referredBy) {
+            return { success: false, reason: 'already_referred' };
+        }
+
+        // Check if referring to self
+        if (referralCode === this.data.referralCode) {
+            return { success: false, reason: 'self_referral' };
+        }
+
+        // Check if already invited this code
+        if (this.data.invites.some(invite => invite.referralCode === referralCode)) {
+            return { success: false, reason: 'already_invited' };
+        }
+
+        // In a real app, you would:
+        // 1. Verify the referral code with your backend
+        // 2. Award coins to the referrer
+        // 3. Award coins to the invitee
+
+        // For now, we'll simulate a successful referral
+        const inviteBonus = this.data.referralBonus.invitee;
+
+        // Award coins to the invitee (current user)
+        const coinsEarned = this.rewards.addCoins(inviteBonus, 'referral');
+
+        // Record the referral
+        this.data.referredBy = referralCode;
+
+        this.saveReferrals();
+
+        return {
+            success: true,
+            coinsEarned,
+            referralCode
+        };
+    }
+
+    recordInvite(inviteeData) {
+        const invite = {
+            inviteeId: inviteeData.userId || null,
+            inviteeName: inviteeData.name || 'Anonymous',
+            referralCode: inviteeData.referralCode || this.data.referralCode,
+            timestamp: Date.now(),
+            coinsEarned: this.data.referralBonus.inviter
+        };
+
+        this.data.invites.unshift(invite);
+        this.data.totalInvites++;
+        this.data.totalCoinsEarned += this.data.referralBonus.inviter;
+
+        // Award coins to referrer
+        this.rewards.addCoins(this.data.referralBonus.inviter, 'referral');
+
+        this.saveReferrals();
+
+        return invite;
+    }
+
+    getInvites() {
+        return this.data.invites;
+    }
+
+    getReferralStats() {
+        return {
+            referralCode: this.data.referralCode,
+            totalInvites: this.data.totalInvites,
+            totalCoinsEarned: this.data.totalCoinsEarned,
+            referralLink: this.getReferralLink(),
+            referredBy: this.data.referredBy,
+            bonusPerInvite: this.data.referralBonus.inviter,
+            bonusForInvitee: this.data.referralBonus.invitee
+        };
+    }
+
+    canClaimReferralBonus() {
+        return !this.data.referredBy;
+    }
+
+    getInviteRewardAmount() {
+        return this.data.referralBonus.inviter;
+    }
+
+    getInviteeRewardAmount() {
+        return this.data.referralBonus.invitee;
+    }
+}
+
 // Favorites Manager
 class FavoritesManager {
     constructor() {
@@ -739,10 +886,11 @@ class GamePortal {
         this.currentGame = null;
         this.currentSession = null;
         this.profile = new UserProfile();
-        this.leaderboard = new LeaderboardManager(this.profile);
         this.rewards = new RewardsManager(this.profile);
         this.share = new ShareManager(this.profile);
         this.favorites = new FavoritesManager();
+        this.referral = new ReferralManager(this.profile, this.rewards);
+        this.leaderboard = new LeaderboardManager(this.profile);
         this.portalView = document.getElementById('portal-view');
         this.gameView = document.getElementById('game-view');
         this.profileView = document.getElementById('profile-view');
@@ -1100,6 +1248,116 @@ class GamePortal {
         const customMessage = document.getElementById('share-message').value;
         if (this.share.shareGeneric(customMessage)) {
             this.hideSharePopup();
+        }
+    }
+
+    showReferralPopup() {
+        const popup = document.getElementById('referral-popup');
+        const stats = this.referral.getReferralStats();
+
+        // Update referral stats
+        document.getElementById('referral-code').textContent = stats.referralCode;
+        document.getElementById('referral-link').value = stats.referralLink;
+        document.getElementById('referral-invites').textContent = stats.totalInvites;
+        document.getElementById('referral-earned').textContent = stats.totalCoinsEarned.toLocaleString();
+        document.getElementById('referral-bonus').textContent = stats.bonusPerInvite;
+
+        // Update invites list
+        const invitesListEl = document.getElementById('referral-invites-list');
+        const invites = this.referral.getInvites();
+
+        if (invites.length === 0) {
+            invitesListEl.innerHTML = '<p class="empty-text">No invites yet. Share your link to start earning!</p>';
+        } else {
+            invitesListEl.innerHTML = invites.map(invite => {
+                const timeAgo = this.getTimeAgo(invite.timestamp);
+                return `
+                    <div class="invite-item">
+                        <span class="invite-name">${invite.inviteeName}</span>
+                        <span class="invite-time">${timeAgo}</span>
+                        <span class="invite-earned">+${invite.coinsEarned} 🪙</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        popup.classList.add('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('medium');
+        }
+    }
+
+    hideReferralPopup() {
+        const popup = document.getElementById('referral-popup');
+        popup.classList.remove('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    copyReferralLink() {
+        const linkInput = document.getElementById('referral-link');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999); // Mobile
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(linkInput.value)
+                .then(() => {
+                    this.showNotification('Referral link copied! Share it to earn coins!');
+                })
+                .catch(err => {
+                    console.error('Copy failed:', err);
+                    this.fallbackCopy(linkInput.value);
+                });
+        } else {
+            this.fallbackCopy(linkInput.value);
+        }
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.notificationOccurred('success');
+        }
+    }
+
+    shareReferralLink() {
+        const stats = this.referral.getReferralStats();
+        const message = `🎮 Join the ultimate game portal! Use my referral code: ${stats.referralCode}\n\nGet ${stats.bonusForInvitee} bonus coins when you sign up!`;
+        const link = stats.referralLink;
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+
+            if (tg.switchInlineQuery) {
+                tg.switchInlineQuery(`${message} ${link}`);
+            } else if (tg.openTelegramLink) {
+                const shareLink = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`;
+                tg.openTelegramLink(shareLink);
+            } else {
+                this.shareGenericReferral(message, link);
+            }
+        } else {
+            this.shareGenericReferral(message, link);
+        }
+
+        this.hideReferralPopup();
+    }
+
+    shareGenericReferral(message, link) {
+        if (navigator.share) {
+            navigator.share({
+                title: '🎮 Game Portal Invitation',
+                text: message,
+                url: link
+            }).catch(err => {
+                console.log('Share failed:', err);
+                this.copyReferralLink();
+            });
+        } else {
+            this.copyReferralLink();
         }
     }
 
@@ -1602,6 +1860,12 @@ class GamePortal {
             });
         });
 
+        // Referral system
+        document.getElementById('referral-btn').addEventListener('click', () => this.showReferralPopup());
+        document.getElementById('close-referral-popup').addEventListener('click', () => this.hideReferralPopup());
+        document.getElementById('copy-referral-link').addEventListener('click', () => this.copyReferralLink());
+        document.getElementById('share-referral-link').addEventListener('click', () => this.shareReferralLink());
+
         // Close popups when clicking outside
         document.getElementById('daily-rewards-popup').addEventListener('click', (e) => {
             if (e.target.id === 'daily-rewards-popup') {
@@ -1612,6 +1876,12 @@ class GamePortal {
         document.getElementById('share-popup').addEventListener('click', (e) => {
             if (e.target.id === 'share-popup') {
                 this.hideSharePopup();
+            }
+        });
+
+        document.getElementById('referral-popup').addEventListener('click', (e) => {
+            if (e.target.id === 'referral-popup') {
+                this.hideReferralPopup();
             }
         });
 
@@ -1636,6 +1906,8 @@ class GamePortal {
                     this.hideDailyRewardsPopup();
                 } else if (document.getElementById('share-popup').classList.contains('active')) {
                     this.hideSharePopup();
+                } else if (document.getElementById('referral-popup').classList.contains('active')) {
+                    this.hideReferralPopup();
                 } else {
                     this.tg.close();
                 }
