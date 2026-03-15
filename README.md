@@ -1,5 +1,7 @@
 # Telegram Game Portal 🎮
 
+[![GitHub Repo](https://img.shields.io/badge/GitHub-morganpage--tech-telegram--game--portal-blue?style=flat-square&logo=github)](https://github.com/morganpage-tech/telegram-game-portal)
+
 A Telegram Mini App that serves as a portal for HTML canvas games.
 
 ## Features
@@ -108,6 +110,8 @@ Then access at `http://localhost:8000`
 2. Use `/newapp` to create a Mini App
 3. Enter your deployed URL
 4. Share the link or add to your bot's menu
+
+> 💡 **GitHub Setup**: See `GITHUB_SETUP.md` for complete instructions on creating a GitHub repository and pushing your code.
 
 ## Game Development Tips
 
