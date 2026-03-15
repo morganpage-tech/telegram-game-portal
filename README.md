@@ -6,6 +6,7 @@ A Telegram Mini App that serves as a portal for HTML canvas games.
 
 ## Features
 
+### Core Portal
 - 📱 Mobile-optimized design
 - 🎨 Dark theme that adapts to Telegram's color scheme
 - 🎮 Easy to add new games
@@ -13,6 +14,26 @@ A Telegram Mini App that serves as a portal for HTML canvas games.
 - 👆 Touch-friendly controls
 - ⚡ Fast loading with iframe-based game loading
 - 🌐 Works with any HTML5 Canvas game
+
+### User Engagement Features
+- 👤 **User Profile & Stats** - Track games played, playtime, scores, and level up
+- 🏆 **Leaderboards** - Global, friends, and per-game rankings with real-time updates
+- 🎁 **Daily Rewards** - Claim daily coins with streak bonuses (up to 2x multiplier)
+- 📤 **Shareable Scores** - Share achievements via Telegram or social media
+- ⭐ **Favorites & Search** - Organize games with favorites and powerful search
+- 🎁 **Referral System** - Invite friends and earn coins (100 coins per invite!)
+
+### Coin Economy
+- 🪙 Persistent coin balance
+- 💰 Multiple earning methods: daily rewards, game sessions, referrals, score bonuses
+- 📊 Complete transaction history
+- 📅 Streak multipliers for bonus earnings
+
+### Game Features
+- 🎯 6 built-in games: Snake, Pong, Tic Tac Toe, Flappy Bird, Breakout, Memory
+- 🏅 Achievement system with 8 unlockable badges
+- 📊 Detailed game statistics per game
+- 🔄 Session tracking with accurate playtime
 
 ## Project Structure
 
@@ -215,11 +236,23 @@ Free to use and modify for your projects!
 For issues or questions, check the Telegram Mini Apps documentation:
 https://core.telegram.org/bots/webapps
 
+## Documentation
+
+- **[FEATURES.md](FEATURES.md)** - Complete features documentation
+- **[DAILY_REWARDS.md](DAILY_REWARDS.md)** - Daily rewards system guide
+- **[SHAREABLE_SCORES.md](SHAREABLE_SCORES.md)** - Shareable scores documentation
+- **[CATEGORIES_SEARCH_FAVORITES.md](CATEGORIES_SEARCH_FAVORITES.md)** - Search & favorites guide
+- **[REFERRAL_SYSTEM.md](REFERRAL_SYSTEM.md)** - Referral system documentation
+- **[GITHUB_SETUP.md](GITHUB_SETUP.md)** - GitHub repository setup guide
+- **[GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md)** - GitHub Pages deployment guide
+
 ## Future Enhancements
 
-- [ ] Game statistics tracking
-- [ ] Leaderboards
-- [ ] Save/load game progress
-- [ ] Multiplayer support
-- [ ] More games
-- [ ] Game categories and filters
+- [ ] In-game currency spending (unlock items, power-ups)
+- [ ] Game ratings and reviews
+- [ ] Push notifications for events
+- [ ] Squad/clan system for team competition
+- [ ] Tournaments and seasonal events
+- [ ] Airdrop/token rewards
+- [ ] Advanced cross-promotion and recommendations
+- [ ] Multiplayer games
