@@ -1585,6 +1585,11 @@ class GamePortal {
         this.gameTitle.textContent = game.name;
         this.gameFrame.src = game.url;
 
+        // Update favorite button state
+        const isFavorite = this.favorites.isFavorite(gameId);
+        const favoriteBtn = document.getElementById('favorite-game-btn');
+        favoriteBtn.classList.toggle('active', isFavorite);
+
         // Hide share button initially
         this.shareBtn.style.display = 'none';
 
@@ -2259,6 +2264,25 @@ class GamePortal {
         }
     }
 
+    toggleGameViewFavorite() {
+        if (!this.currentGame) return;
+
+        const isFavorite = this.favorites.toggleFavorite(this.currentGame.id);
+        const favoriteBtn = document.getElementById('favorite-game-btn');
+        favoriteBtn.classList.toggle('active', isFavorite);
+
+        // Show notification
+        const message = isFavorite
+            ? `⭐ ${this.currentGame.name} added to favorites!`
+            : `Removed ${this.currentGame.name} from favorites`;
+        this.showNotification(message);
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred(isFavorite ? 'medium' : 'light');
+        }
+    }
+
     getUniqueCategories() {
         const categories = new Set(GAMES.map(game => game.category));
         return Array.from(categories).sort();
@@ -2513,6 +2537,9 @@ class GamePortal {
         this.leaderboardMoreBtn.addEventListener('click', () => this.showLeaderboard());
         this.profileBtn.addEventListener('click', () => this.showProfile());
         this.shareBtn.addEventListener('click', () => this.showSharePopup());
+
+        // Favorite button in game view
+        document.getElementById('favorite-game-btn').addEventListener('click', () => this.toggleGameViewFavorite());
 
         // Search
         this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
