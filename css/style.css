@@ -1738,3 +1738,236 @@ body {
     font-size: 14px;
     color: #4caf50;
 }
+
+/* Daily Tasks Button */
+.daily-tasks-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.daily-tasks-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.daily-tasks-btn:active {
+    transform: scale(0.95);
+}
+
+.tasks-icon {
+    font-size: 20px;
+}
+
+.tasks-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    background: #ff4757;
+    border-radius: 50%;
+    border: 2px solid var(--tg-theme-header-bg-color);
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasks-badge.active {
+    display: flex;
+}
+
+/* Daily Tasks Popup Content */
+.daily-tasks-content {
+    max-width: 420px;
+}
+
+/* Daily Tasks Stats */
+.daily-tasks-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.daily-tasks-stat {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.daily-tasks-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--tg-theme-button-color);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.daily-tasks-stat-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Daily Tasks List */
+.daily-tasks-list {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.daily-task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.2s;
+}
+
+.daily-task-item:last-child {
+    border-bottom: none;
+}
+
+.daily-task-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.daily-task-item.completed {
+    opacity: 0.6;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.task-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+}
+
+.task-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.task-desc {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+}
+
+.task-reward {
+    font-weight: 700;
+    font-size: 14px;
+    color: #ffd700;
+}
+
+.task-progress {
+    background: rgba(255,215,0,0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.task-completed {
+    color: #4caf50;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* All Tasks Bonus Section */
+.all-tasks-bonus-section {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.15));
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.bonus-announcement {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.bonus-emoji {
+    font-size: 28px;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.bonus-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+.claim-all-tasks-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 4px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: #1a1a1a;
+}
+
+.claim-all-tasks-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+.claim-all-tasks-btn:active {
+    transform: scale(0.98);
+}
+
+.claim-amount {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.claim-text {
+    font-size: 14px;
+    font-weight: 600;
+}

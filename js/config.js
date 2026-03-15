@@ -111,5 +111,47 @@ const PORTAL_CONFIG = {
         { id: 'coins_5000', name: 'Gold Tycoon', icon: '💵', desc: 'Earn 5000 total coins', coinsRequired: 5000 },
         { id: 'daily_7', name: 'Dedicated Player', icon: '🎁', desc: 'Claim 7 daily rewards', dailyRewardRequired: 7 },
         { id: 'daily_30', name: 'Loyal Player', icon: '🌟', desc: 'Claim 30 daily rewards', dailyRewardRequired: 30 }
-    ]
+    ],
+
+    // Daily tasks configuration
+    dailyTasks: {
+        // Number of tasks per day
+        tasksPerDay: 4,
+
+        // Tasks available to choose from (will randomly select tasksPerDay)
+        availableTasks: [
+            // Gameplay tasks
+            { id: 'play_games', name: 'Game Player', icon: '🎮', desc: 'Play 3 games', gamesRequired: 3, reward: 30 },
+            { id: 'play_more_games', name: 'Dedicated Gamer', icon: '🎯', desc: 'Play 5 games', gamesRequired: 5, reward: 50 },
+            { id: 'score_100', name: 'High Scorer', icon: '🏆', desc: 'Score 100 points in any game', scoreRequired: 100, reward: 25 },
+            { id: 'score_500', name: 'Champion', icon: '🥇', desc: 'Score 500 points in any game', scoreRequired: 500, reward: 75 },
+            { id: 'play_arcade', name: 'Arcade Fan', icon: '🕹️', desc: 'Play 2 arcade games', category: 'Arcade', categoryGamesRequired: 2, reward: 35 },
+            { id: 'play_puzzle', name: 'Puzzle Master', icon: '🧩', desc: 'Play 2 puzzle games', category: 'Puzzle', categoryGamesRequired: 2, reward: 35 },
+            { id: 'play_sports', name: 'Sports Star', icon: '⚽', desc: 'Play 2 sports games', category: 'Sports', categoryGamesRequired: 2, reward: 35 },
+
+            // Engagement tasks
+            { id: 'claim_daily', name: 'Daily Reward', icon: '🎁', desc: 'Claim your daily reward', dailyRewardRequired: true, reward: 20 },
+            { id: 'share_score', name: 'Social Butterfly', icon: '📤', desc: 'Share your score', shareRequired: true, reward: 25 },
+            { id: 'invite_friend', name: 'Good Friend', icon: '👥', desc: 'Invite 1 friend', inviteRequired: 1, reward: 100 },
+            { id: 'view_leaderboard', name: 'Competitor', icon: '📊', desc: 'Check the leaderboard', viewLeaderboardRequired: true, reward: 15 },
+
+            // Earning tasks
+            { id: 'earn_coins_100', name: 'Coin Collector', icon: '🪙', desc: 'Earn 100 coins today', coinsEarnedRequired: 100, reward: 40 },
+            { id: 'earn_coins_250', name: 'Treasure Hunter', icon: '💰', desc: 'Earn 250 coins today', coinsEarnedRequired: 250, reward: 75 },
+
+            // Exploration tasks
+            { id: 'try_new_game', name: 'Explorer', icon: '🔍', desc: 'Try a new game', newGameRequired: true, reward: 30 },
+            { id: 'play_all_categories', name: 'Versatile Player', icon: '🎨', desc: 'Play games from 3 categories', categoriesRequired: 3, reward: 50 },
+
+            // Social tasks
+            { id: 'check_profile', name: 'Profile Master', icon: '👤', desc: 'Check your profile', viewProfileRequired: true, reward: 15 },
+            { id: 'check_favorites', name: 'Favorites Fan', icon: '⭐', desc: 'View your favorites', viewFavoritesRequired: true, reward: 20 }
+        ],
+
+        // Timezone for daily reset (UTC offset in hours, e.g., -5 for EST, +0 for UTC)
+        dailyResetTimezone: 0,
+
+        // Bonus for completing all tasks
+        allTasksBonus: 100
+    }
 };

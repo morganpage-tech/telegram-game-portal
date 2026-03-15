@@ -881,6 +881,299 @@ class FavoritesManager {
 }
 
 // Game Portal App
+
+// Daily Tasks Manager
+class DailyTasksManager {
+    constructor(profile, rewards, referral, leaderboard) {
+        this.profile = profile;
+        this.rewards = rewards;
+        this.referral = referral;
+        this.leaderboard = leaderboard;
+        this.storageKey = 'gamePortalDailyTasks';
+        this.data = this.loadDailyTasks();
+        this.checkDailyReset();
+    }
+
+    loadDailyTasks() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Check if we need to generate new tasks for today
+                if (this.isToday(parsed.lastReset)) {
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.error('Error loading daily tasks:', e);
+        }
+        return this.generateNewTasks();
+    }
+
+    saveDailyTasks() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        } catch (e) {
+            console.error('Error saving daily tasks:', e);
+        }
+    }
+
+    isToday(timestamp) {
+        if (!timestamp) return false;
+        const date = new Date(timestamp);
+        const now = new Date();
+        return date.toDateString() === now.toDateString();
+    }
+
+    checkDailyReset() {
+        if (!this.isToday(this.data.lastReset)) {
+            this.generateNewTasks();
+        }
+    }
+
+    generateNewTasks() {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        this.data = {
+            lastReset: startOfDay,
+            tasks: [],
+            taskProgress: {},
+            coinsEarned: 0,
+            tasksCompleted: 0,
+            bonusClaimed: false
+        };
+
+        // Randomly select tasks
+        const availableTasks = [...PORTAL_CONFIG.dailyTasks.availableTasks];
+        const shuffled = availableTasks.sort(() => Math.random() - 0.5);
+        const selectedTasks = shuffled.slice(0, PORTAL_CONFIG.dailyTasks.tasksPerDay);
+
+        this.data.tasks = selectedTasks.map(task => ({
+            ...task,
+            completed: false
+        }));
+
+        this.saveDailyTasks();
+        return this.data;
+    }
+
+    getTasks() {
+        this.checkDailyReset();
+        return this.data.tasks;
+    }
+
+    getTask(taskId) {
+        return this.data.tasks.find(task => task.id === taskId);
+    }
+
+    // Progress tracking methods
+    trackGamePlayed(gameId) {
+        this.checkDailyReset();
+
+        // Track games played
+        if (!this.data.taskProgress.gamesPlayed) {
+            this.data.taskProgress.gamesPlayed = [];
+        }
+        if (!this.data.taskProgress.gamesPlayed.includes(gameId)) {
+            this.data.taskProgress.gamesPlayed.push(gameId);
+        }
+
+        this.updateTaskProgress('play_games', { count: this.data.taskProgress.gamesPlayed.length });
+        this.updateTaskProgress('play_more_games', { count: this.data.taskProgress.gamesPlayed.length });
+        this.checkAllTasksComplete();
+    }
+
+    trackScore(score) {
+        this.checkDailyReset();
+
+        if (!this.data.taskProgress.highestScore) {
+            this.data.taskProgress.highestScore = 0;
+        }
+        this.data.taskProgress.highestScore = Math.max(this.data.taskProgress.highestScore, score);
+
+        this.updateTaskProgress('score_100', { count: this.data.taskProgress.highestScore });
+        this.updateTaskProgress('score_500', { count: this.data.taskProgress.highestScore });
+        this.checkAllTasksComplete();
+    }
+
+    trackCategoryPlayed(category) {
+        this.checkDailyReset();
+
+        if (!this.data.taskProgress.categoriesPlayed) {
+            this.data.taskProgress.categoriesPlayed = [];
+        }
+        if (!this.data.taskProgress.categoriesPlayed.includes(category)) {
+            this.data.taskProgress.categoriesPlayed.push(category);
+        }
+
+        const categoryTasks = {
+            'Arcade': 'play_arcade',
+            'Puzzle': 'play_puzzle',
+            'Sports': 'play_sports'
+        };
+
+        if (categoryTasks[category]) {
+            const categoryGamesPlayed = this.data.taskProgress.gamesPlayed
+                ? GAMES.filter(g => g.category === category && this.data.taskProgress.gamesPlayed.includes(g.id)).length
+                : 0;
+            this.updateTaskProgress(categoryTasks[category], { count: categoryGamesPlayed });
+        }
+
+        this.updateTaskProgress('play_all_categories', { count: this.data.taskProgress.categoriesPlayed.length });
+        this.checkAllTasksComplete();
+    }
+
+    trackDailyRewardClaimed() {
+        this.checkDailyReset();
+        this.updateTaskProgress('claim_daily', { completed: true });
+    }
+
+    trackScoreShared() {
+        this.checkDailyReset();
+        this.updateTaskProgress('share_score', { completed: true });
+    }
+
+    trackFriendInvited() {
+        this.checkDailyReset();
+        this.updateTaskProgress('invite_friend', { count: (this.data.taskProgress.invites || 0) + 1 });
+    }
+
+    trackLeaderboardViewed() {
+        this.checkDailyReset();
+        this.updateTaskProgress('view_leaderboard', { completed: true });
+    }
+
+    trackCoinsEarned(amount) {
+        this.checkDailyReset();
+
+        if (!this.data.taskProgress.coinsEarned) {
+            this.data.taskProgress.coinsEarned = 0;
+        }
+        this.data.taskProgress.coinsEarned += amount;
+
+        this.updateTaskProgress('earn_coins_100', { count: this.data.taskProgress.coinsEarned });
+        this.updateTaskProgress('earn_coins_250', { count: this.data.taskProgress.coinsEarned });
+        this.checkAllTasksComplete();
+    }
+
+    trackNewGamePlayed(gameId) {
+        this.checkDailyReset();
+
+        if (!this.data.taskProgress.gamesPlayedBefore) {
+            // Check what games were played before today
+            this.data.taskProgress.gamesPlayedBefore = this.profile.data.gameStats
+                ? Object.keys(this.profile.data.gameStats)
+                : [];
+        }
+
+        const isNewGame = !this.data.taskProgress.gamesPlayedBefore.includes(gameId);
+        if (isNewGame) {
+            this.updateTaskProgress('try_new_game', { completed: true });
+        }
+    }
+
+    trackProfileViewed() {
+        this.checkDailyReset();
+        this.updateTaskProgress('check_profile', { completed: true });
+    }
+
+    trackFavoritesViewed() {
+        this.checkDailyReset();
+        this.updateTaskProgress('check_favorites', { completed: true });
+    }
+
+    updateTaskProgress(taskId, progress) {
+        const task = this.getTask(taskId);
+        if (!task || task.completed) return;
+
+        this.data.taskProgress[taskId] = { ...this.data.taskProgress[taskId], ...progress };
+
+        // Check if task is complete
+        let isComplete = false;
+
+        if (task.gamesRequired) {
+            isComplete = (this.data.taskProgress[taskId]?.count || 0) >= task.gamesRequired;
+        } else if (task.scoreRequired) {
+            isComplete = (this.data.taskProgress[taskId]?.count || 0) >= task.scoreRequired;
+        } else if (task.categoryGamesRequired) {
+            isComplete = (this.data.taskProgress[taskId]?.count || 0) >= task.categoryGamesRequired;
+        } else if (task.categoriesRequired) {
+            isComplete = (this.data.taskProgress[taskId]?.count || 0) >= task.categoriesRequired;
+        } else if (task.coinsEarnedRequired) {
+            isComplete = (this.data.taskProgress[taskId]?.count || 0) >= task.coinsEarnedRequired;
+        } else if (task.dailyRewardRequired || task.shareRequired || task.newGameRequired ||
+                   task.inviteRequired || task.viewLeaderboardRequired || task.viewProfileRequired || task.viewFavoritesRequired) {
+            isComplete = this.data.taskProgress[taskId]?.completed || false;
+        }
+
+        if (isComplete) {
+            task.completed = true;
+            this.data.tasksCompleted++;
+            this.rewards.addCoins(task.reward, 'task');
+            this.data.coinsEarned += task.reward;
+            this.saveDailyTasks();
+        }
+    }
+
+    checkAllTasksComplete() {
+        const allComplete = this.data.tasks.every(task => task.completed);
+        if (allComplete && !this.data.bonusClaimed) {
+            // All tasks complete - user can claim bonus
+            this.saveDailyTasks();
+        }
+    }
+
+    claimAllTasksBonus() {
+        if (this.data.bonusClaimed) return false;
+
+        const allComplete = this.data.tasks.every(task => task.completed);
+        if (!allComplete) return false;
+
+        this.data.bonusClaimed = true;
+        const bonus = PORTAL_CONFIG.dailyTasks.allTasksBonus;
+        this.rewards.addCoins(bonus, 'task_bonus');
+        this.saveDailyTasks();
+        return bonus;
+    }
+
+    getTaskProgress(taskId) {
+        const task = this.getTask(taskId);
+        const progress = this.data.taskProgress[taskId] || {};
+
+        return {
+            taskId,
+            completed: task?.completed || false,
+            current: progress.count || 0,
+            target: task?.gamesRequired || task?.scoreRequired || task?.categoryGamesRequired ||
+                    task?.categoriesRequired || task?.coinsEarnedRequired || 1
+        };
+    }
+
+    getDailyStats() {
+        this.checkDailyReset();
+        const allComplete = this.data.tasks.every(task => task.completed);
+
+        return {
+            tasksCompleted: this.data.tasksCompleted,
+            totalTasks: this.data.tasks.length,
+            coinsEarned: this.data.coinsEarned,
+            bonusAvailable: allComplete && !this.data.bonusClaimed,
+            bonusAmount: PORTAL_CONFIG.dailyTasks.allTasksBonus,
+            bonusClaimed: this.data.bonusClaimed
+        };
+    }
+
+    getTasksByStatus(status) {
+        this.checkDailyReset();
+        return this.data.tasks.filter(task => {
+            if (status === 'completed') return task.completed;
+            if (status === 'available') return !task.completed;
+            return true;
+        });
+    }
+}
+
 class GamePortal {
     constructor() {
         this.currentGame = null;
@@ -891,6 +1184,7 @@ class GamePortal {
         this.favorites = new FavoritesManager();
         this.referral = new ReferralManager(this.profile, this.rewards);
         this.leaderboard = new LeaderboardManager(this.profile);
+        this.dailyTasks = new DailyTasksManager(this.profile, this.rewards, this.referral, this.leaderboard);
         this.portalView = document.getElementById('portal-view');
         this.gameView = document.getElementById('game-view');
         this.profileView = document.getElementById('profile-view');
@@ -1146,6 +1440,15 @@ class GamePortal {
                     this.updateShareButton();
                 }
 
+                // Track daily tasks progress
+                this.dailyTasks.trackGamePlayed(this.currentSession.gameId);
+                this.dailyTasks.trackScore(score);
+
+                const game = GAMES.find(g => g.id === this.currentSession.gameId);
+                if (game) {
+                    this.dailyTasks.trackCategoryPlayed(game.category);
+                }
+
                 this.currentSession = null;
             }
         } catch (e) {
@@ -1233,6 +1536,7 @@ class GamePortal {
     shareToTelegram() {
         const customMessage = document.getElementById('share-message').value;
         if (this.share.shareToTelegram(customMessage)) {
+            this.dailyTasks.trackScoreShared();
             this.hideSharePopup();
         }
     }
@@ -1240,6 +1544,7 @@ class GamePortal {
     shareToFriend() {
         const customMessage = document.getElementById('share-message').value;
         if (this.share.shareToFriend(customMessage)) {
+            this.dailyTasks.trackScoreShared();
             this.hideSharePopup();
         }
     }
@@ -1247,6 +1552,7 @@ class GamePortal {
     shareGeneric() {
         const customMessage = document.getElementById('share-message').value;
         if (this.share.shareGeneric(customMessage)) {
+            this.dailyTasks.trackScoreShared();
             this.hideSharePopup();
         }
     }
@@ -1358,6 +1664,84 @@ class GamePortal {
             });
         } else {
             this.copyReferralLink();
+        }
+    }
+
+    showDailyTasksPopup() {
+        const popup = document.getElementById('daily-tasks-popup');
+        const tasksListEl = document.getElementById('daily-tasks-list');
+        const bonusSectionEl = document.getElementById('all-tasks-bonus-section');
+        const stats = this.dailyTasks.getDailyStats();
+
+        // Update stats
+        document.getElementById('daily-tasks-completed').textContent = `${stats.tasksCompleted}/${stats.totalTasks}`;
+        document.getElementById('daily-tasks-earned').textContent = stats.coinsEarned;
+
+        // Render tasks
+        const tasks = this.dailyTasks.getTasks();
+        tasksListEl.innerHTML = tasks.map(task => {
+            const progress = this.dailyTasks.getTaskProgress(task.id);
+            const isComplete = progress.completed;
+            const hasTarget = progress.target > 1;
+
+            let progressText = '';
+            if (hasTarget && !isComplete) {
+                progressText = `<span class="task-progress">${progress.current}/${progress.target}</span>`;
+            } else if (isComplete) {
+                progressText = '<span class="task-completed">✓</span>';
+            }
+
+            return `
+                <div class="daily-task-item ${isComplete ? 'completed' : ''}">
+                    <span class="task-icon">${task.icon}</span>
+                    <div class="task-info">
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-desc">${task.desc}</span>
+                    </div>
+                    <span class="task-reward">+${task.reward} 🪙</span>
+                    ${progressText}
+                </div>
+            `;
+        }).join('');
+
+        // Show/hide bonus section
+        if (stats.bonusAvailable) {
+            bonusSectionEl.style.display = 'block';
+            document.getElementById('all-tasks-bonus-amount').textContent = stats.bonusAmount;
+        } else {
+            bonusSectionEl.style.display = 'none';
+        }
+
+        popup.classList.add('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('medium');
+        }
+    }
+
+    hideDailyTasksPopup() {
+        const popup = document.getElementById('daily-tasks-popup');
+        popup.classList.remove('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    claimAllTasksBonus() {
+        const bonus = this.dailyTasks.claimAllTasksBonus();
+
+        if (bonus) {
+            this.updateCoinDisplay();
+            this.showDailyTasksPopup(); // Re-render to hide bonus section
+            this.showNotification(`🎉 Bonus claimed! +${bonus} coins!`);
+
+            // Haptic feedback
+            if (this.tg && this.tg.HapticFeedback) {
+                this.tg.HapticFeedback.notificationOccurred('success');
+            }
         }
     }
 
@@ -1495,6 +1879,7 @@ class GamePortal {
         const result = this.rewards.claimDailyReward();
 
         if (result.success) {
+            this.dailyTasks.trackDailyRewardClaimed();
             this.updateCoinDisplay();
             this.checkDailyReward();
             this.showDailyRewardsPopup(); // Re-render to show claimed state
@@ -1585,6 +1970,7 @@ class GamePortal {
 
     showProfile() {
         this.updateProfileUI();
+        this.dailyTasks.trackProfileViewed();
         this.portalView.classList.remove('active');
         this.profileView.classList.add('active');
 
@@ -1695,6 +2081,7 @@ class GamePortal {
 
     showLeaderboard() {
         this.renderLeaderboard();
+        this.dailyTasks.trackLeaderboardViewed();
         this.portalView.classList.remove('active');
         this.leaderboardView.classList.add('active');
 
@@ -1866,6 +2253,11 @@ class GamePortal {
         document.getElementById('copy-referral-link').addEventListener('click', () => this.copyReferralLink());
         document.getElementById('share-referral-link').addEventListener('click', () => this.shareReferralLink());
 
+        // Daily tasks
+        document.getElementById('daily-tasks-btn').addEventListener('click', () => this.showDailyTasksPopup());
+        document.getElementById('close-daily-tasks-popup').addEventListener('click', () => this.hideDailyTasksPopup());
+        document.getElementById('claim-all-tasks-bonus').addEventListener('click', () => this.claimAllTasksBonus());
+
         // Close popups when clicking outside
         document.getElementById('daily-rewards-popup').addEventListener('click', (e) => {
             if (e.target.id === 'daily-rewards-popup') {
@@ -1882,6 +2274,12 @@ class GamePortal {
         document.getElementById('referral-popup').addEventListener('click', (e) => {
             if (e.target.id === 'referral-popup') {
                 this.hideReferralPopup();
+            }
+        });
+
+        document.getElementById('daily-tasks-popup').addEventListener('click', (e) => {
+            if (e.target.id === 'daily-tasks-popup') {
+                this.hideDailyTasksPopup();
             }
         });
 
@@ -1908,6 +2306,8 @@ class GamePortal {
                     this.hideSharePopup();
                 } else if (document.getElementById('referral-popup').classList.contains('active')) {
                     this.hideReferralPopup();
+                } else if (document.getElementById('daily-tasks-popup').classList.contains('active')) {
+                    this.hideDailyTasksPopup();
                 } else {
                     this.tg.close();
                 }

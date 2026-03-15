@@ -23,6 +23,10 @@
                             <span class="rewards-icon">🎁</span>
                             <span class="rewards-pulse" id="rewards-pulse"></span>
                         </button>
+                        <button id="daily-tasks-btn" class="daily-tasks-btn">
+                            <span class="tasks-icon">📋</span>
+                            <span class="tasks-badge" id="tasks-badge"></span>
+                        </button>
                         <div class="coin-balance" id="coin-balance">
                             <span class="coin-icon">🪙</span>
                             <span class="coin-amount" id="header-coin-amount">0</span>
@@ -388,6 +392,42 @@
                     <div class="invites-list" id="referral-invites-list">
                         <p class="empty-text">No invites yet. Share your link to start earning!</p>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Tasks Popup -->
+        <div id="daily-tasks-popup" class="popup-overlay">
+            <div class="popup-content daily-tasks-content">
+                <div class="popup-header">
+                    <h2>📋 Daily Tasks</h2>
+                    <button class="close-btn" id="close-daily-tasks-popup">✕</button>
+                </div>
+
+                <div class="daily-tasks-stats">
+                    <div class="daily-tasks-stat">
+                        <span class="daily-tasks-stat-value" id="daily-tasks-completed">0/4</span>
+                        <span class="daily-tasks-stat-label">Tasks Completed</span>
+                    </div>
+                    <div class="daily-tasks-stat">
+                        <span class="daily-tasks-stat-value" id="daily-tasks-earned">0</span>
+                        <span class="daily-tasks-stat-label">Coins Earned</span>
+                    </div>
+                </div>
+
+                <div class="daily-tasks-list" id="daily-tasks-list">
+                    <!-- Tasks will be loaded here -->
+                </div>
+
+                <div class="all-tasks-bonus-section" id="all-tasks-bonus-section" style="display: none;">
+                    <div class="bonus-announcement">
+                        <span class="bonus-emoji">🎉</span>
+                        <span class="bonus-text">All tasks completed!</span>
+                    </div>
+                    <button class="claim-all-tasks-btn" id="claim-all-tasks-bonus">
+                        <span class="claim-amount">+<span id="all-tasks-bonus-amount">100</span> 🪙</span>
+                        <span class="claim-text">Claim Bonus</span>
+                    </button>
                 </div>
             </div>
         </div>
