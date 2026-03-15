@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="telegram:api" content="7.0">
+    <title>Game Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Portal View -->
+        <div id="portal-view" class="view active">
+            <header class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1>🎮 Game Portal</h1>
+                        <p class="subtitle">Choose your adventure</p>
+                    </div>
+                    <div class="header-right">
+                        <button id="daily-rewards-btn" class="daily-rewards-btn">
+                            <span class="rewards-icon">🎁</span>
+                            <span class="rewards-pulse" id="rewards-pulse"></span>
+                        </button>
+                        <div class="coin-balance" id="coin-balance">
+                            <span class="coin-icon">🪙</span>
+                            <span class="coin-amount" id="header-coin-amount">0</span>
+                        </div>
+                        <button id="profile-btn" class="profile-btn">
+                            <span id="profile-avatar">👤</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar" id="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-value" id="stat-games">0</span>
+                    <span class="stat-label">Games</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stat-time">0m</span>
+                    <span class="stat-label">Playtime</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="stat-score">0</span>
+                    <span class="stat-label">Top Score</span>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        id="search-input"
+                        class="search-input"
+                        placeholder="Search games..."
+                    />
+                    <button class="clear-search" id="clear-search" style="display: none;">✕</button>
+                </div>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="category-filters" id="category-filters">
+                <button class="category-btn active" data-category="all">
+                    <span class="category-emoji">🎮</span>
+                    <span class="category-name">All</span>
+                </button>
+                <button class="category-btn" data-category="favorites">
+                    <span class="category-emoji">⭐</span>
+                    <span class="category-name">Favorites</span>
+                </button>
+                <button class="category-btn" data-category="Arcade">
+                    <span class="category-emoji">🕹️</span>
+                    <span class="category-name">Arcade</span>
+                </button>
+                <button class="category-btn" data-category="Puzzle">
+                    <span class="category-emoji">🧩</span>
+                    <span class="category-name">Puzzle</span>
+                </button>
+                <button class="category-btn" data-category="Sports">
+                    <span class="category-emoji">⚽</span>
+                    <span class="category-name">Sports</span>
+                </button>
+            </div>
+
+            <!-- Quick Leaderboard Preview -->
+            <div class="leaderboard-preview" id="leaderboard-preview">
+                <div class="preview-header">
+                    <span class="preview-title">🏆 Top Players</span>
+                    <button class="preview-more" id="leaderboard-more-btn">View All</button>
+                </div>
+                <div class="preview-list" id="leaderboard-preview-list">
+                    <!-- Top 3 players will be loaded here -->
+                </div>
+            </div>
+
+            <div class="game-grid" id="game-grid">
+                <!-- Games will be loaded here dynamically -->
+            </div>
+        </div>
+
+        <!-- Daily Rewards Popup -->
+        <div id="daily-rewards-popup" class="popup-overlay">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>🎁 Daily Rewards</h2>
+                    <button class="close-btn" id="close-rewards-popup">✕</button>
+                </div>
+                <div class="rewards-calendar" id="rewards-calendar">
+                    <!-- Rewards will be loaded here -->
+                </div>
+                <div class="claim-reward-section" id="claim-reward-section">
+                    <div class="streak-info">
+                        <span class="streak-emoji">🔥</span>
+                        <span class="streak-count" id="daily-streak-count">0</span>
+                        <span class="streak-label">Day Streak</span>
+                    </div>
+                    <button class="claim-btn" id="claim-reward-btn">
+                        <span class="coin-amount" id="claim-coin-amount">0</span>
+                        <span class="coin-icon">🪙</span>
+                    </button>
+                </div>
+                <div class="reward-claimed" id="reward-claimed" style="display: none;">
+                    <div class="claimed-icon">✅</div>
+                    <div class="claimed-text">Reward Claimed!</div>
+                    <div class="claimed-subtext">Come back tomorrow for more</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game View -->
+        <div id="game-view" class="view">
+            <header class="header game-header">
+                <button id="back-btn" class="back-btn">← Back</button>
+                <h2 id="game-title">Game Title</h2>
+                <button id="share-btn" class="share-btn" style="display: none;">
+                    <span class="share-icon">📤</span>
+                </button>
+            </header>
+            <div class="game-container">
+                <iframe id="game-frame" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+
+            <!-- Share Score Popup -->
+            <div id="share-popup" class="popup-overlay">
+                <div class="popup-content share-popup-content">
+                    <div class="popup-header">
+                        <h2>📤 Share Score</h2>
+                        <button class="close-btn" id="close-share-popup">✕</button>
+                    </div>
+                    <div class="score-preview">
+                        <div class="score-emoji" id="share-score-emoji">🎮</div>
+                        <div class="score-game" id="share-game-name">Game Name</div>
+                        <div class="score-value" id="share-score-value">0</div>
+                        <div class="score-label">Points</div>
+                    </div>
+                    <div class="share-options">
+                        <button class="share-option" id="share-telegram">
+                            <span class="share-option-icon">📱</span>
+                            <span class="share-option-name">Share to Telegram</span>
+                            <span class="share-option-desc">Send to chats and friends</span>
+                        </button>
+                        <button class="share-option" id="share-friend">
+                            <span class="share-option-icon">👥</span>
+                            <span class="share-option-name">Challenge a Friend</span>
+                            <span class="share-option-desc">Beat my score!</span>
+                        </button>
+                        <button class="share-option" id="share-generic">
+                            <span class="share-option-icon">🔗</span>
+                            <span class="share-option-name">Share Link</span>
+                            <span class="share-option-desc">Copy or share</span>
+                        </button>
+                    </div>
+                    <div class="share-template">
+                        <label>Custom Message:</label>
+                        <textarea id="share-message" rows="3"></textarea>
+                        <div class="template-buttons">
+                            <button class="template-btn" data-template="default">Default</button>
+                            <button class="template-btn" data-template="funny">Funny</button>
+                            <button class="template-btn" data-template="challenge">Challenge</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile View -->
+        <div id="profile-view" class="view">
+            <header class="header">
+                <button id="profile-back-btn" class="back-btn">← Back</button>
+                <h2>My Profile</h2>
+            </header>
+            <div class="profile-content">
+                <div class="profile-header">
+                    <div class="profile-avatar-large" id="profile-avatar-large">👤</div>
+                    <h3 id="profile-name">Player</h3>
+                    <p class="profile-level" id="profile-level">Level 1</p>
+                    <div class="profile-rank" id="profile-rank">Rank: #--</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🎮</div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="profile-games">0</span>
+                            <span class="stat-label">Games Played</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="profile-playtime">0m</span>
+                            <span class="stat-label">Total Playtime</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="profile-highscore">0</span>
+                            <span class="stat-label">Best Score</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🪙</div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="profile-coins">0</span>
+                            <span class="stat-label">Total Coins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coin Balance Card -->
+                <div class="coin-balance-card">
+                    <div class="coin-balance-header">
+                        <span class="coin-balance-title">🪙 Coin Balance</span>
+                        <span class="coin-balance-amount" id="profile-coin-balance">0</span>
+                    </div>
+                    <div class="coin-balance-streak">
+                        <span class="streak-info">🔥 Streak Bonus: </span>
+                        <span class="streak-multiplier" id="streak-multiplier">x1</span>
+                    </div>
+                </div>
+
+                <!-- Coin History -->
+                <div class="profile-section">
+                    <h3>💰 Coin History</h3>
+                    <div class="coin-history" id="coin-history">
+                        <p class="empty-text">No transactions yet</p>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>🎯 Recent Games</h3>
+                    <div class="recent-games" id="recent-games">
+                        <!-- Recent games will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>🏅 Achievements</h3>
+                    <div class="achievements" id="achievements">
+                        <!-- Achievements will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard View -->
+        <div id="leaderboard-view" class="view">
+            <header class="header">
+                <button id="leaderboard-back-btn" class="back-btn">← Back</button>
+                <h2>🏆 Leaderboards</h2>
+            </header>
+            <div class="leaderboard-content">
+                <!-- Tabs -->
+                <div class="leaderboard-tabs" id="leaderboard-tabs">
+                    <button class="tab-btn active" data-tab="global">🌍 Global</button>
+                    <button class="tab-btn" data-tab="friends">👥 Friends</button>
+                    <button class="tab-btn" data-tab="games">🎮 Games</button>
+                </div>
+
+                <!-- Global Leaderboard -->
+                <div class="leaderboard-section active" id="section-global">
+                    <div class="leaderboard-header">
+                        <h3>🌍 Global Ranking</h3>
+                        <p class="leaderboard-subtitle">Top players worldwide</p>
+                    </div>
+                    <div class="leaderboard-list" id="global-leaderboard">
+                        <!-- Leaderboard entries -->
+                    </div>
+                </div>
+
+                <!-- Friends Leaderboard -->
+                <div class="leaderboard-section" id="section-friends">
+                    <div class="leaderboard-header">
+                        <h3>👥 Friends Ranking</h3>
+                        <p class="leaderboard-subtitle">Compete with your friends</p>
+                    </div>
+                    <div class="leaderboard-list" id="friends-leaderboard">
+                        <!-- Leaderboard entries -->
+                    </div>
+                </div>
+
+                <!-- Per-Game Leaderboard -->
+                <div class="leaderboard-section" id="section-games">
+                    <div class="leaderboard-header">
+                        <h3>🎮 Game Rankings</h3>
+                        <p class="leaderboard-subtitle">Best scores per game</p>
+                    </div>
+                    <div class="game-leaderboard-selector" id="game-leaderboard-selector">
+                        <!-- Game selector buttons -->
+                    </div>
+                    <div class="leaderboard-list" id="game-leaderboard">
+                        <!-- Leaderboard entries -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

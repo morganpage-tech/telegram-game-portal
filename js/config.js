@@ -1,0 +1,115 @@
+// Game Portal Configuration
+// Add your games here
+
+const GAMES = [
+    {
+        id: 'snake',
+        name: 'Snake Classic',
+        category: 'Arcade',
+        emoji: '🐍',
+        thumbnail: null, // Optional: path to thumbnail image
+        url: 'games/snake.html',
+        description: 'Classic snake game'
+    },
+    {
+        id: 'pong',
+        name: 'Pong',
+        category: 'Sports',
+        emoji: '🏓',
+        thumbnail: null,
+        url: 'games/pong.html',
+        description: 'Table tennis classic'
+    },
+    {
+        id: 'tictactoe',
+        name: 'Tic Tac Toe',
+        category: 'Puzzle',
+        emoji: '⭕',
+        thumbnail: null,
+        url: 'games/tictactoe.html',
+        description: 'Three in a row'
+    },
+    {
+        id: 'breakout',
+        name: 'Breakout',
+        category: 'Arcade',
+        emoji: '🧱',
+        thumbnail: null,
+        url: 'games/breakout.html',
+        description: 'Break all the bricks'
+    },
+    {
+        id: 'memory',
+        name: 'Memory Match',
+        category: 'Puzzle',
+        emoji: '🧠',
+        thumbnail: null,
+        url: 'games/memory.html',
+        description: 'Test your memory'
+    },
+    {
+        id: 'flappy',
+        name: 'Flappy Bird',
+        category: 'Arcade',
+        emoji: '🐦',
+        thumbnail: null,
+        url: 'games/flappy.html',
+        description: 'Navigate through pipes'
+    }
+];
+
+// Portal settings
+const PORTAL_CONFIG = {
+    // Enable/disable features
+    showCategory: true,
+    showEmoji: true,
+    showProfile: true,
+    showStatsBar: true,
+
+    // Default game size
+    defaultGameWidth: '100%',
+    defaultGameHeight: '100%',
+
+    // Theme colors (overrides Telegram theme)
+    customColors: {
+        primary: '#3390ec',
+        secondary: '#16213e'
+    },
+
+    // Profile settings
+    profile: {
+        // Maximum recent games to display
+        maxRecentGames: 10,
+
+        // Level calculation (playtime in seconds per level)
+        secondsPerLevel: 600, // 10 minutes = 1 level
+
+        // Enable Telegram user integration
+        useTelegramUser: true
+    },
+
+    // Achievements
+    achievements: [
+        { id: 'first_game', name: 'First Steps', icon: '🎮', desc: 'Play your first game', gamesRequired: 1 },
+        { id: 'ten_games', name: 'Game Enthusiast', icon: '🔥', desc: 'Play 10 games', gamesRequired: 10 },
+        { id: 'fifty_games', name: 'Gamer', icon: '🎯', desc: 'Play 50 games', gamesRequired: 50 },
+        { id: 'hundred_games', name: 'Legend', icon: '👑', desc: 'Play 100 games', gamesRequired: 100 },
+        { id: 'score_100', name: 'Centurion', icon: '💯', desc: 'Score 100 points', scoreRequired: 100 },
+        { id: 'score_500', name: 'High Scorer', icon: '🏆', desc: 'Score 500 points', scoreRequired: 500 },
+        { id: 'score_1000', name: 'Champion', icon: '🥇', desc: 'Score 1000 points', scoreRequired: 1000 },
+        { id: 'streak_3', name: 'Consistent', icon: '📅', desc: '3 day streak', streakRequired: 3 },
+        { id: 'streak_7', name: 'Dedicated', icon: '⭐', desc: '7 day streak', streakRequired: 7 },
+        { id: 'streak_30', name: 'Master', icon: '💎', desc: '30 day streak', streakRequired: 30 },
+        { id: 'playtime_1h', name: 'Time Player', icon: '⏱️', desc: 'Play for 1 hour total', playtimeRequired: 3600 },
+        { id: 'playtime_10h', name: 'Marathon Gamer', icon: '🏅', desc: 'Play for 10 hours total', playtimeRequired: 36000 },
+        { id: 'level_10', name: 'Rising Star', icon: '🌟', desc: 'Reach level 10', levelRequired: 10 },
+        { id: 'level_50', name: 'Expert', icon: '🎖️', desc: 'Reach level 50', levelRequired: 50 },
+        { id: 'all_games', name: 'Completionist', icon: '📚', desc: 'Play all games', requireAllGames: true },
+        { id: 'coins_100', name: 'Coin Collector', icon: '🪙', desc: 'Earn 100 total coins', coinsRequired: 100 },
+        { id: 'coins_500', name: 'Treasure Hunter', icon: '💰', desc: 'Earn 500 total coins', coinsRequired: 500 },
+        { id: 'coins_1000', name: 'Coin Master', icon: '🏦', desc: 'Earn 1000 total coins', coinsRequired: 1000 },
+        { id: 'coins_5000', name: 'Gold Tycoon', icon: '💵', desc: 'Earn 5000 total coins', coinsRequired: 5000 },
+        { id: 'daily_7', name: 'Dedicated Player', icon: '🎁', desc: 'Claim 7 daily rewards', dailyRewardRequired: 7 },
+        { id: 'daily_30', name: 'Loyal Player', icon: '🌟', desc: 'Claim 30 daily rewards', dailyRewardRequired: 30 }
+    ]
+};
