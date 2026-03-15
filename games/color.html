@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Color Match</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .color-display {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 150px);
+            gap: 20px;
+        }
+
+        .color-option {
+            width: 150px;
+            height: 80px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .color-option:active {
+            transform: scale(0.95);
+        }
+
+        .timer {
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            transition: width 0.1s linear;
+            border-radius: 5px;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .game-over-overlay.show {
+            display: flex;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Color Match</h1>
+    <div class="stats">
+        <div>Score: <span id="score">0</span></div>
+        <div>Time: <span id="timeLeft">30</span>s</div>
+    </div>
+    <div class="color-display" id="colorDisplay"></div>
+    <div class="options" id="options"></div>
+    <div class="timer">
+        <div class="timer-bar" id="timerBar"></div>
+    </div>
+    <div class="instructions">
+        <p>Match the word meaning, not the color!</p>
+    </div>
+
+    <div class="game-over-overlay" id="gameOver">
+        <h2>Game Over!</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <button class="restart-btn" onclick="startGame()">Play Again</button>
+    </div>
+
+    <script>
+        const colors = [
+            { name: 'RED', value: '#ff6b6b' },
+            { name: 'BLUE', value: '#4ecdc4' },
+            { name: 'GREEN', value: '#95e1d3' },
+            { name: 'YELLOW', value: '#feca57' },
+            { name: 'PURPLE', value: '#a55eea' },
+            { name: 'ORANGE', value: '#ff9f43' },
+            { name: 'PINK', value: '#fd79a8' },
+            { name: 'CYAN', value: '#00d2d3' }
+        ];
+
+        let score = 0;
+        let timeLeft = 30;
+        let maxTime = 30;
+        let timerInterval;
+        let isGameOver = false;
+        let targetColor = null;
+        let displayColor = null;
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function generateQuestion() {
+            targetColor = colors[Math.floor(Math.random() * colors.length)];
+            displayColor = colors[Math.floor(Math.random() * colors.length)];
+
+            document.getElementById('colorDisplay').textContent = targetColor.name;
+            document.getElementById('colorDisplay').style.color = displayColor.value;
+
+            const options = shuffle([...colors]).slice(0, 4);
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach(color => {
+                const option = document.createElement('div');
+                option.className = 'color-option';
+                option.style.background = color.value;
+                option.textContent = color.name;
+                option.onclick = () => checkAnswer(color);
+                option.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    checkAnswer(color);
+                });
+                optionsContainer.appendChild(option);
+            });
+
+            return targetColor;
+        }
+
+        function checkAnswer(selectedColor) {
+            if (isGameOver) return;
+
+            if (selectedColor.name === targetColor.name) {
+                score++;
+                timeLeft = Math.min(timeLeft + 2, maxTime);
+                document.getElementById('score').textContent = score;
+                generateQuestion();
+            } else {
+                score = Math.max(0, score - 1);
+                timeLeft = Math.max(0, timeLeft - 3);
+                document.getElementById('score').textContent = score;
+                document.getElementById('colorDisplay').style.animation = 'shake 0.3s';
+                setTimeout(() => {
+                    document.getElementById('colorDisplay').style.animation = '';
+                }, 300);
+            }
+        }
+
+        function updateTimer() {
+            if (isGameOver) return;
+
+            timeLeft -= 0.1;
+            document.getElementById('timeLeft').textContent = Math.ceil(timeLeft);
+            document.getElementById('timerBar').style.width = (timeLeft / maxTime * 100) + '%';
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = maxTime;
+            isGameOver = false;
+
+            document.getElementById('score').textContent = score;
+            document.getElementById('timeLeft').textContent = timeLeft;
+            document.getElementById('gameOver').classList.remove('show');
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 100);
+
+            generateQuestion();
+        }
+
+        function endGame() {
+            isGameOver = true;
+            clearInterval(timerInterval);
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOver').classList.add('show');
+        }
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

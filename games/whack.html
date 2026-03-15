@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Whack-a-Mole</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 15px;
+        }
+
+        .hole {
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .hole:active {
+            transform: scale(0.95);
+        }
+
+        .mole {
+            font-size: 60px;
+            animation: popUp 0.1s ease-out;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes popUp {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .hit {
+            animation: hit 0.2s ease-out;
+        }
+
+        @keyframes hit {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); filter: brightness(1.5); }
+        }
+
+        .instructions {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .game-over-overlay.show {
+            display: flex;
+        }
+
+        .game-over-overlay h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <h1>Whack-a-Mole</h1>
+    <div class="stats">
+        <div>Score: <span id="score">0</span></div>
+        <div>Time: <span id="time">30</span>s</div>
+    </div>
+    <div class="game-board" id="board"></div>
+    <div class="instructions">
+        <p>Tap the moles as fast as you can!</p>
+    </div>
+
+    <div class="game-over-overlay" id="gameOver">
+        <h2>Game Over!</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <button class="restart-btn" onclick="startGame()">Play Again</button>
+    </div>
+
+    <script>
+        const board = document.getElementById('board');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const gameOverOverlay = document.getElementById('gameOver');
+        const finalScoreDisplay = document.getElementById('finalScore');
+
+        let score = 0;
+        let timeLeft = 30;
+        let moles = [];
+        let moleInterval;
+        let gameInterval;
+        let isPlaying = false;
+
+        function createBoard() {
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'hole';
+                hole.dataset.index = i;
+                hole.addEventListener('click', whack);
+                hole.addEventListener('touchstart', whack);
+                board.appendChild(hole);
+            }
+        }
+
+        function showMole() {
+            const holes = document.querySelectorAll('.hole');
+            const availableHoles = [];
+
+            holes.forEach((hole, index) => {
+                if (!hole.querySelector('.mole')) {
+                    availableHoles.push(hole);
+                }
+            });
+
+            if (availableHoles.length > 0) {
+                const randomHole = availableHoles[Math.floor(Math.random() * availableHoles.length)];
+                const mole = document.createElement('div');
+                mole.className = 'mole';
+                mole.textContent = '🐹';
+                randomHole.appendChild(mole);
+
+                setTimeout(() => {
+                    if (mole.parentNode) {
+                        mole.remove();
+                    }
+                }, 800 - Math.min(score * 10, 400));
+            }
+        }
+
+        function whack(e) {
+            if (!isPlaying) return;
+
+            e.preventDefault();
+            const hole = e.currentTarget;
+            const mole = hole.querySelector('.mole');
+
+            if (mole) {
+                mole.classList.add('hit');
+                score += 10;
+                scoreDisplay.textContent = score;
+
+                setTimeout(() => {
+                    mole.remove();
+                }, 200);
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            isPlaying = true;
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            gameOverOverlay.classList.remove('show');
+
+            clearInterval(moleInterval);
+            clearInterval(gameInterval);
+
+            createBoard();
+
+            moleInterval = setInterval(() => {
+                showMole();
+                showMole();
+            }, 600);
+
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(moleInterval);
+            clearInterval(gameInterval);
+            finalScoreDisplay.textContent = score;
+            gameOverOverlay.classList.add('show');
+
+            // Remove all moles
+            document.querySelectorAll('.mole').forEach(mole => mole.remove());
+        }
+
+        // Telegram WebApp integration
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        createBoard();
+        startGame();
+    </script>
+</body>
+</html>

@@ -55,6 +55,96 @@ const GAMES = [
         thumbnail: null,
         url: 'games/flappy.html',
         description: 'Navigate through pipes'
+    },
+    {
+        id: 'tetris',
+        name: 'Tetris',
+        category: 'Arcade',
+        emoji: '🟦',
+        thumbnail: null,
+        url: 'games/tetris.html',
+        description: 'Classic block stacking'
+    },
+    {
+        id: '2048',
+        name: '2048',
+        category: 'Puzzle',
+        emoji: '🔢',
+        thumbnail: null,
+        url: 'games/2048.html',
+        description: 'Merge tiles to 2048'
+    },
+    {
+        id: 'minesweeper',
+        name: 'Minesweeper',
+        category: 'Puzzle',
+        emoji: '💣',
+        thumbnail: null,
+        url: 'games/minesweeper.html',
+        description: 'Find the safe tiles'
+    },
+    {
+        id: 'invaders',
+        name: 'Space Invaders',
+        category: 'Arcade',
+        emoji: '👾',
+        thumbnail: null,
+        url: 'games/invaders.html',
+        description: 'Defend Earth from aliens'
+    },
+    {
+        id: 'whack',
+        name: 'Whack-a-Mole',
+        category: 'Action',
+        emoji: '🔨',
+        thumbnail: null,
+        url: 'games/whack.html',
+        description: 'Hit the moles fast!'
+    },
+    {
+        id: 'simon',
+        name: 'Simon Says',
+        category: 'Puzzle',
+        emoji: '🎵',
+        thumbnail: null,
+        url: 'games/simon.html',
+        description: 'Remember the pattern'
+    },
+    {
+        id: 'dino',
+        name: 'Dino Run',
+        category: 'Arcade',
+        emoji: '🦖',
+        thumbnail: null,
+        url: 'games/dino.html',
+        description: 'Jump over obstacles'
+    },
+    {
+        id: 'color',
+        name: 'Color Match',
+        category: 'Puzzle',
+        emoji: '🎨',
+        thumbnail: null,
+        url: 'games/color.html',
+        description: 'Match colors quickly'
+    },
+    {
+        id: 'typing',
+        name: 'Speed Typing',
+        category: 'Puzzle',
+        emoji: '⌨️',
+        thumbnail: null,
+        url: 'games/typing.html',
+        description: 'Test your typing speed'
+    },
+    {
+        id: 'asteroids',
+        name: 'Asteroids',
+        category: 'Arcade',
+        emoji: '🪨',
+        thumbnail: null,
+        url: 'games/asteroids.html',
+        description: 'Destroy asteroids'
     }
 ];
 
