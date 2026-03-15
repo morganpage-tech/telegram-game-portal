@@ -153,5 +153,72 @@ const PORTAL_CONFIG = {
 
         // Bonus for completing all tasks
         allTasksBonus: 100
+    },
+
+    // Push notification configuration
+    notifications: {
+        // Enable/disable notifications
+        enabled: true,
+
+        // Bot token (replace with your bot token from @BotFather)
+        // This is used to send notifications via Telegram Bot API
+        botToken: '', // e.g., '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
+
+        // Webhook URL for handling notifications (if using a backend)
+        webhookUrl: '', // e.g., 'https://your-api.com/notifications'
+
+        // Available notification types
+        types: {
+            dailyReminder: {
+                id: 'daily_reminder',
+                name: 'Daily Reminder',
+                icon: '⏰',
+                desc: 'Get reminded to play daily',
+                enabledByDefault: true,
+                defaultTime: '10:00', // HH:MM format
+                template: '🎮 Don\'t forget to play today! Your daily reward is waiting!'
+            },
+            friendInvited: {
+                id: 'friend_invited',
+                name: 'Friend Invited',
+                icon: '👥',
+                desc: 'When someone accepts your invite',
+                enabledByDefault: true,
+                template: '🎉 {friend_name} accepted your invitation! You earned {reward} coins!'
+            },
+            leaderboardAlert: {
+                id: 'leaderboard_alert',
+                name: 'Leaderboard Alert',
+                icon: '📊',
+                desc: 'When someone beats your high score',
+                enabledByDefault: false,
+                template: '⚠️ {player} just beat your high score in {game}! Can you beat them back?'
+            },
+            newGameAvailable: {
+                id: 'new_game',
+                name: 'New Game',
+                icon: '🎲',
+                desc: 'When a new game is added',
+                enabledByDefault: true,
+                template: '🆕 New game "{game_name}" is now available! Come check it out!'
+            },
+            specialEvent: {
+                id: 'special_event',
+                name: 'Special Events',
+                icon: '🎉',
+                desc: 'Tournaments and special events',
+                enabledByDefault: true,
+                template: '🎉 {event_name} is happening now! {description}'
+            },
+            taskReminder: {
+                id: 'task_reminder',
+                name: 'Tasks Reminder',
+                icon: '📋',
+                desc: 'Reminder to complete daily tasks',
+                enabledByDefault: true,
+                defaultTime: '18:00', // HH:MM format
+                template: '📋 You have {tasks_remaining} daily tasks remaining! {coins_available} coins still up for grabs!'
+            }
+        }
     }
 };

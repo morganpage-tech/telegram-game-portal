@@ -263,6 +263,19 @@
                     </button>
                 </div>
 
+                <!-- Notifications Card -->
+                <div class="notifications-card">
+                    <div class="notifications-header">
+                        <span class="notifications-title">🔔 Notifications</span>
+                        <span class="notifications-status" id="notifications-status-text">Off</span>
+                    </div>
+                    <p class="notifications-desc">Get reminded about daily rewards and events!</p>
+                    <button class="notifications-settings-btn" id="notifications-settings-btn">
+                        <span class="notifications-btn-icon">⚙️</span>
+                        <span class="notifications-btn-text">Settings</span>
+                    </button>
+                </div>
+
                 <!-- Coin History -->
                 <div class="profile-section">
                     <h3>💰 Coin History</h3>
@@ -428,6 +441,36 @@
                         <span class="claim-amount">+<span id="all-tasks-bonus-amount">100</span> 🪙</span>
                         <span class="claim-text">Claim Bonus</span>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Popup -->
+        <div id="notifications-popup" class="popup-overlay">
+            <div class="popup-content notifications-content">
+                <div class="popup-header">
+                    <h2>🔔 Notifications</h2>
+                    <button class="close-btn" id="close-notifications-popup">✕</button>
+                </div>
+
+                <div class="notifications-status">
+                    <div class="notifications-toggle">
+                        <span class="notifications-status-text">Enable Notifications</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notifications-master-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p class="notifications-desc">Get notified about daily rewards, challenges, and more!</p>
+                </div>
+
+                <div class="notifications-types" id="notifications-types-list">
+                    <!-- Notification types will be loaded here -->
+                </div>
+
+                <div class="notifications-note">
+                    <span class="note-icon">ℹ️</span>
+                    <span>Notifications are sent via Telegram. Subscribe to receive alerts!</span>
                 </div>
             </div>
         </div>

@@ -880,6 +880,203 @@ class FavoritesManager {
     }
 }
 
+
+// Notification Preferences Manager
+class NotificationManager {
+    constructor(profile, telegram) {
+        this.profile = profile;
+        this.telegram = telegram;
+        this.storageKey = 'gamePortalNotifications';
+        this.data = this.loadNotifications();
+    }
+
+    loadNotifications() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (e) {
+            console.error('Error loading notification preferences:', e);
+        }
+        return this.getDefaultPreferences();
+    }
+
+    saveNotifications() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        } catch (e) {
+            console.error('Error saving notification preferences:', e);
+        }
+    }
+
+    getDefaultPreferences() {
+        const types = PORTAL_CONFIG.notifications.types;
+        const preferences = {};
+
+        for (const [key, config] of Object.entries(types)) {
+            preferences[key] = {
+                enabled: config.enabledByDefault,
+                time: config.defaultTime || null
+            };
+        }
+
+        return {
+            enabled: PORTAL_CONFIG.notifications.enabled,
+            types: preferences,
+            chatId: null,
+            subscribedAt: null,
+            lastReminderSent: null
+        };
+    }
+
+    getPreferences() {
+        return this.data;
+    }
+
+    getNotificationType(typeKey) {
+        return this.data.types[typeKey] || null;
+    }
+
+    isEnabled() {
+        return this.data.enabled;
+    }
+
+    setEnabled(enabled) {
+        this.data.enabled = enabled;
+        this.saveNotifications();
+    }
+
+    setNotificationTypeEnabled(typeKey, enabled) {
+        if (!this.data.types[typeKey]) return;
+        this.data.types[typeKey].enabled = enabled;
+        this.saveNotifications();
+    }
+
+    setNotificationTime(typeKey, time) {
+        if (!this.data.types[typeKey]) return;
+        this.data.types[typeKey].time = time;
+        this.saveNotifications();
+    }
+
+    subscribe(chatId) {
+        this.data.chatId = chatId;
+        this.data.subscribedAt = Date.now();
+        this.data.enabled = true;
+        this.saveNotifications();
+    }
+
+    unsubscribe() {
+        this.data.chatId = null;
+        this.data.subscribedAt = null;
+        this.data.enabled = false;
+        this.saveNotifications();
+    }
+
+    getChatId() {
+        return this.data.chatId;
+    }
+
+    isSubscribed() {
+        return this.data.enabled && this.data.chatId !== null;
+    }
+
+    getAvailableTypes() {
+        return Object.entries(PORTAL_CONFIG.notifications.types).map(([key, config]) => ({
+            key,
+            name: config.name,
+            icon: config.icon,
+            desc: config.desc,
+            enabled: this.data.types[key]?.enabled || false,
+            hasTime: !!config.defaultTime,
+            time: this.data.types[key]?.time || config.defaultTime
+        }));
+    }
+
+    getTemplate(typeKey, variables = {}) {
+        const type = PORTAL_CONFIG.notifications.types[typeKey];
+        if (!type) return null;
+
+        let template = type.template;
+        for (const [key, value] of Object.entries(variables)) {
+            template = template.replace(`{${key}}`, value);
+        }
+        return template;
+    }
+
+    shouldSend(typeKey) {
+        if (!this.data.enabled) return false;
+        const type = this.data.types[typeKey];
+        return type && type.enabled;
+    }
+
+    wasReminderSentToday() {
+        if (!this.data.lastReminderSent) return false;
+        const lastSent = new Date(this.data.lastReminderSent);
+        const now = new Date();
+        return lastSent.toDateString() === now.toDateString();
+    }
+
+    markReminderSent() {
+        this.data.lastReminderSent = Date.now();
+        this.saveNotifications();
+    }
+
+    async requestPermission() {
+        if (!('Notification' in window)) {
+            throw new Error('This browser does not support notifications');
+        }
+
+        if (Notification.permission === 'granted') {
+            return true;
+        }
+
+        if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        }
+
+        return false;
+    }
+
+    showLocalNotification(title, body, options = {}) {
+        if (Notification.permission === 'granted') {
+            const notification = new Notification(title, {
+                body,
+                icon: options.icon || 'https://morganpage-tech.github.io/telegram-game-portal/icon.png',
+                badge: options.badge || 'https://morganpage-tech.github.io/telegram-game-portal/icon.png',
+                tag: options.tag || 'game-portal',
+                data: options.data || {}
+            });
+
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+                if (options.onClick) {
+                    options.onClick();
+                }
+            };
+
+            return notification;
+        }
+        return null;
+    }
+
+    getStats() {
+        const types = this.getAvailableTypes();
+        const enabledCount = types.filter(t => t.enabled).length;
+        const totalCount = types.length;
+
+        return {
+            enabledCount,
+            totalCount,
+            isSubscribed: this.isSubscribed(),
+            subscribedAt: this.data.subscribedAt
+        };
+    }
+}
+
+
 // Game Portal App
 
 // Daily Tasks Manager
@@ -1185,6 +1382,7 @@ class GamePortal {
         this.referral = new ReferralManager(this.profile, this.rewards);
         this.leaderboard = new LeaderboardManager(this.profile);
         this.dailyTasks = new DailyTasksManager(this.profile, this.rewards, this.referral, this.leaderboard);
+        this.notifications = new NotificationManager(this.profile, this.tg);
         this.portalView = document.getElementById('portal-view');
         this.gameView = document.getElementById('game-view');
         this.profileView = document.getElementById('profile-view');
@@ -1745,6 +1943,104 @@ class GamePortal {
         }
     }
 
+    showNotificationsPopup() {
+        const popup = document.getElementById('notifications-popup');
+        const typesListEl = document.getElementById('notifications-types-list');
+        const masterToggle = document.getElementById('notifications-master-toggle');
+        const statusText = document.getElementById('notifications-status-text');
+
+        // Update master toggle
+        masterToggle.checked = this.notifications.isEnabled();
+        statusText.textContent = masterToggle.checked ? 'On' : 'Off';
+
+        // Render notification types
+        const types = this.notifications.getAvailableTypes();
+        typesListEl.innerHTML = types.map(type => `
+            <div class="notification-type-item ${type.hasTime ? 'with-time' : ''}">
+                <div class="notification-type-info">
+                    <span class="notification-type-icon">${type.icon}</span>
+                    <div class="notification-type-details">
+                        <span class="notification-type-name">${type.name}</span>
+                        <span class="notification-type-desc">${type.desc}</span>
+                        ${type.hasTime ? `
+                            <div class="notification-type-time">
+                                <span>⏰</span>
+                                <input type="time"
+                                       class="notification-time-input"
+                                       data-type="${type.key}"
+                                       value="${type.time || '10:00'}">
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <label class="notification-type-toggle">
+                    <input type="checkbox"
+                           data-type="${type.key}"
+                           ${type.enabled ? 'checked' : ''}>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        `).join('');
+
+        // Add event listeners to type toggles
+        typesListEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const typeKey = e.target.dataset.type;
+                this.notifications.setNotificationTypeEnabled(typeKey, e.target.checked);
+            });
+        });
+
+        // Add event listeners to time inputs
+        typesListEl.querySelectorAll('.notification-time-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const typeKey = e.target.dataset.type;
+                this.notifications.setNotificationTime(typeKey, e.target.value);
+            });
+        });
+
+        popup.classList.add('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('medium');
+        }
+    }
+
+    hideNotificationsPopup() {
+        const popup = document.getElementById('notifications-popup');
+        popup.classList.remove('active');
+
+        // Haptic feedback
+        if (this.tg && this.tg.HapticFeedback) {
+            this.tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    toggleNotifications(enabled) {
+        this.notifications.setEnabled(enabled);
+        document.getElementById('notifications-status-text').textContent = enabled ? 'On' : 'Off';
+
+        if (enabled) {
+            // Request browser notification permission
+            this.notifications.requestPermission()
+                .then(granted => {
+                    if (granted) {
+                        this.showNotification('🔔 Notifications enabled!');
+                        this.notifications.subscribe(this.tg?.initDataUnsafe?.user?.id || null);
+                    } else {
+                        this.showNotification('Notifications permission denied');
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to request notification permission:', err);
+                    this.showNotification('Could not enable notifications');
+                });
+        } else {
+            this.notifications.unsubscribe();
+            this.showNotification('Notifications disabled');
+        }
+    }
+
     updateCoinDisplay() {
         const coins = this.rewards.getCoins();
         document.getElementById('header-coin-amount').textContent = coins.toLocaleString();
@@ -2258,6 +2554,11 @@ class GamePortal {
         document.getElementById('close-daily-tasks-popup').addEventListener('click', () => this.hideDailyTasksPopup());
         document.getElementById('claim-all-tasks-bonus').addEventListener('click', () => this.claimAllTasksBonus());
 
+        // Notifications
+        document.getElementById('notifications-settings-btn').addEventListener('click', () => this.showNotificationsPopup());
+        document.getElementById('close-notifications-popup').addEventListener('click', () => this.hideNotificationsPopup());
+        document.getElementById('notifications-master-toggle').addEventListener('change', (e) => this.toggleNotifications(e.target.checked));
+
         // Close popups when clicking outside
         document.getElementById('daily-rewards-popup').addEventListener('click', (e) => {
             if (e.target.id === 'daily-rewards-popup') {
@@ -2280,6 +2581,12 @@ class GamePortal {
         document.getElementById('daily-tasks-popup').addEventListener('click', (e) => {
             if (e.target.id === 'daily-tasks-popup') {
                 this.hideDailyTasksPopup();
+            }
+        });
+
+        document.getElementById('notifications-popup').addEventListener('click', (e) => {
+            if (e.target.id === 'notifications-popup') {
+                this.hideNotificationsPopup();
             }
         });
 
@@ -2308,6 +2615,8 @@ class GamePortal {
                     this.hideReferralPopup();
                 } else if (document.getElementById('daily-tasks-popup').classList.contains('active')) {
                     this.hideDailyTasksPopup();
+                } else if (document.getElementById('notifications-popup').classList.contains('active')) {
+                    this.hideNotificationsPopup();
                 } else {
                     this.tg.close();
                 }
