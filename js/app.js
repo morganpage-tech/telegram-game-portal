@@ -959,6 +959,8 @@ class GamePortal {
     }
 
     goBack() {
+        console.log('goBack() called');
+
         // End game session
         if (this.currentSession) {
             const score = this.currentSession.score || 0;
@@ -985,17 +987,29 @@ class GamePortal {
             this.currentSession = null;
         }
 
+        // Clear game frame first
         this.gameFrame.src = '';
         this.currentGame = null;
 
+        // Switch views
+        console.log('Removing active from gameView, adding to portalView');
         this.gameView.classList.remove('active');
         this.portalView.classList.add('active');
 
+        // Force reflow to ensure CSS changes apply
+        void this.portalView.offsetWidth;
+
+        // Update UI
+        console.log('Updating stats bar');
         this.updateStatsBar();
         this.updateLeaderboardPreview();
         this.updateProfileRank();
         this.updateCoinDisplay();
+
+        console.log('Reloading games');
         this.loadGames(); // Reload to update game card stats
+
+        console.log('goBack() completed');
 
         // Haptic feedback
         if (this.tg && this.tg.HapticFeedback) {
