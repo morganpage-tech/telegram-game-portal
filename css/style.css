@@ -2455,3 +2455,371 @@ body {
 .note-icon {
     flex-shrink: 0;
 }
+
+/* ========================================
+   ADVERTISEMENT SYSTEM STYLES
+   ======================================== */
+
+/* Banner Ad Container */
+.ad-banner {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 15px;
+    background: rgba(20, 20, 31, 0.5);
+    border: 1px solid rgba(0, 245, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.ad-banner.visible {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ad-banner .ad-placeholder {
+    padding: 12px;
+    text-align: center;
+    color: var(--tg-theme-hint-color);
+    font-size: 12px;
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(191, 0, 255, 0.05));
+}
+
+/* Interstitial Ad Overlay */
+.ad-interstitial {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.ad-interstitial.hidden {
+    display: none;
+}
+
+.ad-overlay {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.ad-content {
+    position: relative;
+    background: rgba(20, 20, 31, 0.95);
+    border: 2px solid rgba(0, 245, 255, 0.3);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(0, 245, 255, 0.2);
+    animation: adPopIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes adPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Close Button */
+.ad-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--tg-theme-text-color);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.ad-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+}
+
+.ad-close-btn:active {
+    transform: scale(0.95);
+}
+
+/* Interstitial Ad Slot */
+#ad-interstitial-slot {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Placeholder Ad */
+.placeholder-ad {
+    width: 100%;
+}
+
+.placeholder-ad-content {
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(191, 0, 255, 0.1));
+    border: 2px dashed rgba(0, 245, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.placeholder-ad h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--tg-theme-button-color);
+}
+
+.placeholder-ad p {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.placeholder-ad button {
+    background: var(--neon-gradient);
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #0a0a0f;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+    box-shadow: var(--neon-glow-cyan);
+}
+
+.placeholder-ad button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 245, 255, 0.7), 0 0 60px rgba(0, 245, 255, 0.4);
+}
+
+.placeholder-ad button:active {
+    transform: translateY(0);
+}
+
+/* Rewarded Ad Button */
+.rewarded-ad-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
+    border: 2px solid #ffd700;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.rewarded-ad-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+}
+
+.rewarded-ad-btn:active {
+    transform: translateY(0);
+}
+
+.rewarded-ad-btn .reward-icon {
+    font-size: 18px;
+}
+
+.rewarded-ad-btn .reward-amount {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Ad Settings in Profile */
+.ad-settings-section {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.ad-settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.ad-settings-header h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.ad-settings-icon {
+    font-size: 24px;
+}
+
+.ad-settings-desc {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Ad Frequency Options */
+.ad-frequency-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.frequency-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.frequency-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.frequency-option.active {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 245, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+}
+
+.frequency-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.frequency-option.active .frequency-radio {
+    border-color: var(--neon-cyan);
+    background: var(--neon-cyan);
+}
+
+.frequency-option.active .frequency-radio::after {
+    content: '✓';
+    color: #0a0a0f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.frequency-label {
+    flex: 1;
+}
+
+.frequency-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.frequency-desc {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+}
+
+/* Responsive Ad Styles */
+@media (max-width: 480px) {
+    .ad-banner {
+        margin: 0 15px 12px;
+    }
+
+    .ad-content {
+        padding: 20px;
+        margin: 0 15px;
+    }
+
+    .ad-overlay {
+        padding: 10px;
+    }
+
+    .placeholder-ad-content {
+        padding: 20px;
+    }
+
+    .placeholder-ad h3 {
+        font-size: 18px;
+    }
+
+    .placeholder-ad p {
+        font-size: 13px;
+    }
+}
+
+/* Ad Loading Animation */
+.ad-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px 20px;
+}
+
+.ad-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 245, 255, 0.2);
+    border-top-color: var(--neon-cyan);
+    border-radius: 50%;
+    animation: adSpin 1s linear infinite;
+}
+
+@keyframes adSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ad-loading-text {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
